@@ -11,8 +11,8 @@ jobs:
         uses: actions/checkout@v4
       - name: build
         run: |
-          docker build . -t notoo1/ubuntu-nix:latest
+          docker build . -t notoo1/ubuntu-nix:24.04-8
       - name: publish
         run: |
           docker login -u notoo1 -p ${{ secrets.DOCKER_HUB_TOKEN }}
-          docker push notoo1/ubuntu-nix:latest
+          docker push notoo1/ubuntu-nix:24.04-8
