@@ -19,5 +19,8 @@ RUN apt-get update && apt-get install -y nix direnv git git-lfs && \
 # Ensure the Nix profile is set up correctly
 RUN ln -s /nix/var/nix/profiles/per-user/root/profile /root/.nix-profile
 
-# ✅ Fix: Use the correct way to load Nix and install devenv
-RUN bash -c "source /etc/profile && nix-env -iA nixpkgs.devenv && nix-env -q"
+# ✅ Fix: Add nixpkgs channel and install devenv correctly
+RUN nix-channel --add https://nixos.org/channels/nixos-unstable nixpkgs && \
+    nix-channel --update && \
+    nix-env -iA nixpkgs.devenv && \
+    nix-env -q
