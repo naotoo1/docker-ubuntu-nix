@@ -6,8 +6,7 @@ RUN apt-get update && apt-get install -y sudo
 # Allow ubuntu user to use sudo without password
 RUN echo "ubuntu ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-# Set up Nix environment
-ENV PATH="$PATH:/root/.nix-profile/bin/"
+# Install base dependencies
 RUN apt-get update && apt-get install -y nix direnv git git-lfs && \
     git lfs install && \
     rm -rf /var/cache/apt/archives /var/lib/apt/lists/* && \
@@ -17,10 +16,8 @@ RUN apt-get update && apt-get install -y nix direnv git git-lfs && \
     echo "max-jobs = auto" | tee -a /etc/nix/nix.conf && \
     echo "experimental-features = nix-command flakes" | tee -a /etc/nix/nix.conf
 
-# Ensure /root/.nix-profile is set up
+# Ensure the Nix profile is set up correctly
 RUN ln -s /nix/var/nix/profiles/per-user/root/profile /root/.nix-profile
 
-# 🛠 **Fix: Preinstall devenv**
-RUN . /root/.nix-profile/etc/profile.d/nix.sh && \
-    nix-env -iA nixpkgs.devenv && \
-    nix-env -q
+# ✅ Fix: Use the correct way to load Nix and install devenv
+RUN bash -c "source /etc/profile && nix-env -iA nixpkgs.devenv && nix-env -q"
