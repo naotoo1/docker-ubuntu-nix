@@ -16,11 +16,14 @@ RUN apt-get update && apt-get install -y nix direnv git git-lfs && \
     echo "max-jobs = auto" | tee -a /etc/nix/nix.conf && \
     echo "experimental-features = nix-command flakes" | tee -a /etc/nix/nix.conf
 
-# Ensure the Nix profile is set up correctly
+# ✅ Ensure Nix profile is set up correctly
 RUN ln -s /nix/var/nix/profiles/per-user/root/profile /root/.nix-profile
 
-# ✅ Fix: Add nixpkgs channel and install devenv correctly
+# ✅ Fix: Add nixpkgs channel and install devenv properly
 RUN nix-channel --add https://nixos.org/channels/nixos-unstable nixpkgs && \
     nix-channel --update && \
     nix-env -iA nixpkgs.devenv && \
     nix-env -q
+
+# ✅ Fix: Run `nix-collect-garbage` to clean up unused dependencies
+RUN nix-collect-garbage -d
