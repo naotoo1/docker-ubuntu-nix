@@ -1,28 +1,19 @@
 FROM ubuntu:24.04
 
-# Update and install dependencies
-RUN apt-get update && apt-get install -y sudo curl
+# Update and install sudo
+RUN apt-get update && apt-get install -y sudo
 
-# Allow 'ubuntu' user to use sudo without password
+# Allow ubuntu user to use sudo without password
 RUN echo "ubuntu ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-# ✅ Install Nix the recommended way
-RUN curl -L https://nixos.org/nix/install | sh
+ENV PATH="$PATH:/root/.nix-profile/bin/"
+RUN apt-get update && apt-get install -y nix direnv git git-lfs && \
+git lfs install && \
+rm -rf /var/cache/apt/archives /var/lib/apt/lists/* && \
+mkdir -p /etc/nix && \
+echo "trusted-users = root ubuntu " | tee -a /etc/nix/nix.conf && \
+echo "cores = 0" | tee -a /etc/nix/nix.conf && \
+echo "max-jobs = auto" | tee -a /etc/nix/nix.conf && \
+echo "experimental-features = nix-command flakes" | tee -a /etc/nix/nix.conf
 
-# ✅ Source Nix profile for subsequent commands
-ENV PATH="/root/.nix-profile/bin:$PATH"
-
-# ✅ Ensure Nix flakes and nix-command are enabled
-RUN mkdir -p /etc/nix && \
-    echo "experimental-features = nix-command flakes" >> /etc/nix/nix.conf
-
-# ✅ Add `nixpkgs` channel and update it
-RUN nix-channel --add https://nixos.org/channels/nixos-unstable nixpkgs && \
-    nix-channel --update
-
-# ✅ Install `devenv` using nix-env (after ensuring nixpkgs is available)
-RUN nix-env -iA nixpkgs.devenv && \
-    nix-env -q
-
-# ✅ Clean up unnecessary files to reduce image size
-RUN nix-collect-garbage -d
+RUN ln -s /nix/var/nix/profiles/per-user/root/profile /root/.nix-profile
